@@ -1,0 +1,464 @@
+
+
+<html>
+<head>
+
+    <title>Cosmic Slot Game</title>
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=VT323">
+<link href="https://unpkg.com/nes.css@2.3.0/css/nes.min.css" rel="stylesheet" />
+
+    <title>
+        The Three Image Game
+    </title>
+
+    <style>
+        body {
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            background-color: #ffffff;
+        }
+        /* Imcontainer grey background */
+        .imcontainer {
+            background-color: #ffffff;
+            text-align: center;
+            float: left;
+            width: 33%;
+            height: 60%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+
+        }
+        .innerim { 
+            margin:auto;
+            width: 90%;
+            height: 90%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        #banner{
+            text-align: center; 
+            font-size: 30px; 
+            margin:20px;
+        }
+        #banner table{
+            width:100%;
+            table-layout: fixed;
+            font-size: 30px;
+        }
+        #banner div{
+            display:inline;
+        }
+        #banner progress{
+            width:80%;
+            height:28px;
+        }
+
+        #endscreen{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display:none;
+            text-align: center;
+        }
+
+        #endscore{
+            width:30%;
+            margin:auto;
+        }
+
+
+
+        .imframe{
+            text-align: center;
+            overflow:auto;
+            margin: 20px !important;
+        }
+        /* Start screen overlay */
+        #startscreen{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+
+            background-color: #e5e5f7;
+            opacity: 1;
+            background-image: linear-gradient(-45deg, #e5e5f7, #e5e5f7 50%, #f74444 50%, #f74444);
+            background-size: 10px 10px;
+        }
+        .explainer{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 30px;
+            padding: 20px;
+            background-color: #f1f1f1;
+            border: 5px solid black;
+            z-index: 2;
+        }
+        /* Start button - central, big retro margins */
+        #startbutton{
+            background-color: #f1f1f1;
+            border: 5px solid black;
+            z-index: 2;
+            margin: 20px;
+            padding:5px;
+        }
+        #startbutton:hover{
+            box-shadow: 5px 5px 0 black;
+            transform: translate(-5px, -5px);
+        }
+    </style>
+</head>
+<script>
+// Load nearest_neighbors.json into an array
+var nearest_neighbors = [];
+var xmlhttp = new XMLHttpRequest();
+xmlhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+        data = JSON.parse(this.responseText);
+        triplets = data['levels'][0]['triplets']
+        filenames = data['filenames']
+        // basepath = data['base_path']
+        basepath = './thumbs/'
+        // add basepath to filenames
+        for(i=0; i<filenames.length; i++){
+            filenames[i] = basepath + filenames[i]
+        }
+
+    }
+};
+xmlhttp.open("GET", "game.json", false);
+xmlhttp.send();
+
+correct = 0
+score = 0
+counter = 0
+levelDelay=200
+scoreArray = []
+ignoreKeys=true;
+
+// on load window
+$(window).on('load',function(){
+    // Define function
+    function rerender(){
+        ignoreKeys = false;
+        // console.log(triplets[counter])
+        // Start triplets
+        i_center = triplets[counter][0]
+        // closer image
+        i_nearest = triplets[counter][1]
+        // farther image
+        i_distant = triplets[counter][2]
+
+        // Change css background image of im2 to random_image['imfn']
+        $('#im2').css('background-image', 'url(' + filenames[i_center] + ')');
+        // Change im2label to name of image
+        $('#im2label').text(filenames[i_center].split('/').pop());
+        // Reset border of im2 to none
+        $('#im2').css('border', '0px ');
+
+        if(Math.random() > 0.5){
+        // Left
+            correct = 0
+            console.log('left')
+        // Change css background image of im1 to nearest neighbor
+            $('#im1').css('background-image', 'url(' + filenames[i_nearest] + ')');
+            // Change im1label to name of image
+            $('#im1label').text(filenames[i_nearest].split('/').pop());
+        // change im3 to distant neighbour
+            $('#im3').css('background-image', 'url(' + filenames[i_distant] + ')');
+            // change im3label to name of image
+            $('#im3label').text(filenames[i_distant].split('/').pop());
+        }
+        else{
+        // Right
+            correct = 1
+            console.log('right')
+        // Change css background image of im3 to nearest neighbor
+        $('#im3').css('background-image', 'url(' + filenames[i_nearest] + ')');
+        // Change im3label to name of image
+        $('#im3label').text(filenames[i_nearest].split('/').pop());
+        // change im1 to distant neighbour
+        $('#im1').css('background-image', 'url(' + filenames[i_distant] + ')');
+        // change im1label to name of image
+        $('#im1label').text(filenames[i_distant].split('/').pop());
+        }
+
+
+        // Add 1 to counter
+        counter += 1
+    }
+
+
+    function selectImage(direction){
+        // If left is correct
+        if(correct==direction){
+            score += 1;
+            // Set border of im2 to green
+            $('#im2').css('border', '5px solid green');
+            // Play good sound
+            $('#audioGood')[0].play();
+        }
+        else{
+            score -= 1;
+            // Set border of im2 to red
+            $('#im2').css('border', '5px solid red');
+            // Play bad sound
+            $('#audioBad')[0].play();
+        }
+
+        updateBanner(score);
+        // Rerender in 200ms
+        setTimeout(rerender, levelDelay);
+        // Ignore keypresses for 200ms
+        ignoreKeys = true;
+        // Append score to scoreArray
+        scoreArray.push(score)
+        console.log(scoreArray)
+    }
+
+    function updateBanner(score){
+        // Update score in banner
+        $('#score').html('Score: ' + score);
+        // Update score progress bar
+        $('#scoreProgress').attr('value', score+10);
+        // If score > 5, set progress bar to green
+        if(score > 5){
+            $( "#scoreProgress" ).removeClass( "is-success is-warning is-error" ).addClass("is-success");
+        }
+        // If score < -5, set it to red
+        else if(score < -5){
+            $( "#scoreProgress" ).removeClass( "is-success is-warning is-error" ).addClass("is-error");
+        }
+        // Else set it to yellow (is-warning)
+        else{
+            $( "#scoreProgress" ).removeClass( "is-success is-warning is-error" ).addClass("is-warning");
+        }
+
+        // Check if score is > 9, end game on highscore
+        if(score > 9){
+            endGame('highscore');
+        }
+        // If score is < -9, end game on lowscore
+        else if(score < -9){
+            endGame('lowscore');
+        }
+
+    }
+
+    function countDown(timeLeft){
+        if(timeLeft > 0){
+            $('#time').html('Time Left: ' + timeLeft);
+            setTimeout(countDown, 1000, timeLeft-1);
+        }
+        else{
+           endGame('time')
+        }
+        $('#timeProgress').attr('value', timeLeft);
+    }
+
+    // On click for im1
+    $('#im1').click(function(){
+        selectImage(0);
+    })
+
+    // On click for im2
+    $('#im3').click(function(){
+        selectImage(1);
+    })
+
+    $(window).keydown(function(data) {
+        if(!ignoreKeys){
+            switch(data.key){
+                case 'ArrowLeft':
+                    selectImage(0);
+                    break;
+                case 'a':
+                    selectImage(0);
+                    break;
+                case 'ArrowRight':
+                    selectImage(1);
+                    break;
+                case 'd':
+                    selectImage(1);
+                    break;
+            }
+        }
+    });
+
+    // Function for end of game
+    function endGame(reason){
+
+        // Stop audioLevel1
+        $('#audioLevel1')[0].pause();
+
+        // Play cheer or boo
+        if(reason=="highscore"){
+            $('#audioCheer')[0].play();
+                $('#endmsg').html('You win! There is no level 2');
+        }
+        else{
+            $('#audioBoo')[0].play();
+            if(reason=="time"){
+                $('#endmsg').html('You ran out of time!');
+            }
+            else if(reason=="lowscore"){
+                $('#endmsg').html('You suck!');
+            }
+        }
+        // Show end screen
+        $('#endscreen').show();
+        // Hide game screen
+        $('#gamescreen').hide();
+        // Show score
+        $('#endscore').html('Your score was: ' + score);
+    }
+
+
+
+
+    // Start game
+    function startGame(){
+        rerender();
+        timeLeft = 100
+        countDown(timeLeft);
+        // Play theme tune
+        $('#audioLevel1')[0].play();
+    }
+
+    // On click for start button
+    $('#startbutton').click(function(){
+        // Hide start screen
+        $('#startscreen').hide();
+        // Start game
+        startGame();
+    });
+
+    // Same for the playagain button
+    $('#playagain').click(function(){
+        // Hide end screen
+        $('#endscreen').hide();
+        // show game screen
+        $('#gamescreen').show();
+        // Reset score
+        score = 0;
+        // Reset counter
+        counter = 0;
+        // Reset score array
+        scoreArray = [];
+        // Start game
+        startGame();
+    });
+
+
+
+})
+
+
+
+
+</script>
+
+
+
+<audio id="audioGood" >
+  <source src="assets/good.wav" type="audio/wav">
+</audio>
+
+<audio id="audioBad">
+  <source src="assets/bad.wav" type="audio/wav">
+</audio>
+
+
+
+<audio id="audioCheer"  >
+    <source src="assets/bbc_cheer.wav" type="audio/wav">
+  </audio>
+  
+  <audio id="audioBoo" >
+    <source src="assets/bbc_boo.wav" type="audio/wav">
+  </audio>
+  
+
+
+<audio id="audioLevel1" loop>
+  <source src="assets/Electronic Fantasy.ogg" type="audio/ogg">
+</audio>
+
+<!-- Three images side by side -->
+<div>
+
+    <!-- Overlay start screen -->
+    <div id="startscreen" >
+        <div class="explainer"><h1> Cosmic Slot Game? </h1>
+
+            <p> This game teaches you to see like a neural network. <br>
+                It does so by showing you three images, and asking you to pick the one that is most similar to the image in the middle. <br>
+                This is exactly <a href="https://en.wikipedia.org/wiki/Triplet_loss" target="_blank"> how many neural networks are trained</a>. <br>
+                The images you see are all taken from <a href="https://en.wikipedia.org/wiki/ImageNet" target="_blank">ImageNet</a>, the world's most common image training dataset. <br>
+            </p>
+            <div id="startbutton" class="nes-pointer" >Cosmic Slot Game!</div>
+        </div>
+        
+    </div>
+
+    <div id="endscreen" class="nes-dialog is-dark">
+        <h1>GAME OVER</h1>
+        <h3 id="endmsg">Bye</h3>
+        <div id="endscore" class="nes-container is-rounded is-dark">Your score was: 0</div>
+        <button type="button" class="nes-btn" id="playagain">PLAY AGAIN</button>
+
+    </div>
+
+
+    <div id="gamescreen">
+        <!-- Score display -->
+        <div id="banner" class="nes-container is-rounded" >
+            <table>
+                <tr>
+                    <th><div id="level">Level: 1</div></th>
+                    <th><div id="score">Score: 0</div>
+                        <progress class="nes-progress is-warning" id="scoreProgress" value="10" max="20"></progress></th>
+    
+                    <th><div id="time">Time: 100</div>
+                    <progress class="nes-progress is-pattern " id="timeProgress" value="100" max="100"></progress>
+                    </th>
+                </tr>
+            </table>
+        </div>
+
+
+    <!-- Three div image containers -->
+    <div class="imframe nes-container is-rounded" >
+        <div class="imcontainer nes-pointer"  > <div  id="im1" class="innerim"></div> 
+            <p id="im1label">Hello world</p>    
+        </div>
+        <div class="imcontainer "  > <div  id="im2" class="innerim"></div> 
+            <p id="im2label">Hello world</p>  </div>
+        <div class="imcontainer  nes-pointer"  > <div  id="im3" class="innerim"></div>
+            <p id="im3label">Hello world</p>  </div>
+    </div>
+
+</div>
+
+
+
+
+
+</div>
+
+
+
+</html>
