@@ -97,6 +97,7 @@
             background-size: 10px 10px;
         }
         .explainer{
+            width:60vw;
             position: absolute;
             top: 50%;
             left: 50%;
@@ -119,6 +120,11 @@
             box-shadow: 5px 5px 0 black;
             transform: translate(-5px, -5px);
         }
+        #nextbutton{
+            float:right;
+            /* height:50px; */
+        }
+
     </style>
 </head>
 <script>
@@ -362,6 +368,32 @@ $(window).on('load',function(){
         startGame();
     });
 
+//     <!-- <div class="nes-balloon from-left">
+//                 <p>It does so by showing you three images, and asking you to pick the one that is most similar to the image in the middle. </p>
+//               </div> -->
+
+//   <!-- <i class="nes-icon is-large heart"></i> -->
+
+//             <!-- <p> 
+//                 This is exactly <a href="https://en.wikipedia.org/wiki/Triplet_loss" target="_blank"> how many neural networks are trained</a>. <br>
+//                 The images you see are all taken from <a href="https://en.wikipedia.org/wiki/ImageNet" target="_blank">ImageNet</a>, the world's most common image training dataset. <br>
+//             </p> -->
+
+    intro_text = ['This game teaches you to see like a neural network.', 
+    'It does so by showing you three images, and asking you to pick the outer image that is most similar to the image in the middle.', 
+    'This is exactly <a href="https://en.wikipedia.org/wiki/Triplet_loss" target="_blank"> how many neural networks are trained</a>.', 
+    'The images you see are all taken from <a href="https://en.wikipedia.org/wiki/ImageNet" target="_blank">ImageNet</a>, the world\'s most common image training dataset.', 
+    'You can click on the images or use the arrows on your keyboard. Your score can go up as well as down. <br> Try to get to +10 in under 100 seconds. Good luck!']
+    // Now for the intro screen animations. 
+    // On clicking nextbutton, replace text in introbubble
+    $('#nextbutton').click(function(){
+        $('#introbubble').html(intro_text.shift());
+        if(intro_text.length == 0){
+            $('#nextbutton').hide();
+            $('#startbutton').show();
+        }
+    });
+
 
 
 })
@@ -402,14 +434,16 @@ $(window).on('load',function(){
 
     <!-- Overlay start screen -->
     <div id="startscreen" >
-        <div class="explainer"><h1> Cosmic Slot Game? </h1>
+        <div class="explainer"><h1> Machine Teaching </h1>
+                <h3>Or, <i>Cosmic Slot Game</i></h3>
+            <div class="nes-balloon from-left" id="introbubble" >
+                <p>Hello!</p>
+              </div>        
+              <br>
+            <div id="startbutton" class="nes-pointer" style="display:none">Cosmic Slot Game!</div>
+            <!-- Small "next" button -->
+            <button type="button" class="nes-btn" id="nextbutton">></button>
 
-            <p> This game teaches you to see like a neural network. <br>
-                It does so by showing you three images, and asking you to pick the one that is most similar to the image in the middle. <br>
-                This is exactly <a href="https://en.wikipedia.org/wiki/Triplet_loss" target="_blank"> how many neural networks are trained</a>. <br>
-                The images you see are all taken from <a href="https://en.wikipedia.org/wiki/ImageNet" target="_blank">ImageNet</a>, the world's most common image training dataset. <br>
-            </p>
-            <div id="startbutton" class="nes-pointer" >Cosmic Slot Game!</div>
         </div>
         
     </div>
@@ -419,7 +453,10 @@ $(window).on('load',function(){
         <h3 id="endmsg">Bye</h3>
         <div id="endscore" class="nes-container is-rounded is-dark">Your score was: 0</div>
         <button type="button" class="nes-btn" id="playagain">PLAY AGAIN</button>
-
+            <!-- trophy -->
+            <i class="nes-icon trophy is-large"></i>
+            <!-- coin -->
+            <i class="nes-icon coin is-large"></i>
     </div>
 
 
